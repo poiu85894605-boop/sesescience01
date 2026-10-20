@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>차근차근 과학배움터 - 느린학습자를 위한 맞춤형 학습</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f4f7fe;
+            color: #2d3748;
+            user-select: none;
+        }
+        .font-friendly {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        /* Custom High-Contrast Mode */
+        body.high-contrast {
+            background-color: #121212 !important;
+            color: #ffffff !important;
+        }
+        body.high-contrast .bg-white {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border-color: #444 !important;
+        }
+        body.high-contrast .bg-indigo-50 {
+            background-color: #2a2a3c !important;
+            color: #f1f5f9 !important;
+        }
+        body.high-contrast .text-gray-600, 
+        body.high-contrast .text-gray-700,
+        body.high-contrast .text-gray-800 {
+            color: #e2e8f0 !important;
+        }
+
+        /* Pulse and Bounce Animations for Engagement */
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-gentle {
+            animation: gentle-pulse 3s infinite ease-in-out;
+        }
+
+        /* Flip card effects */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-all duration-300 text-base" id="appBody">
+
+    <!-- Accessibility Control Bar (UDL Top Bar) -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchStep(1)">
+                <div class="w-10 h-10 rounded-full bg-yellow-400 text-indigo-900 flex items-center justify-center font-bold text-xl shadow">
+                    🌱
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-wide font-friendly">차근차근 과학배움터</h1>
+                    <p class="text-xs text-indigo-200">6. 에너지 전환과 보존 (중3 과학)</p>
+                </div>
+            </div>
+
+            <!-- Accessibility Controls -->
+            <div class="flex items-center flex-wrap gap-2 text-sm bg-indigo-800/80 p-1.5 rounded-2xl border border-indigo-500/30">
+                <button onclick="toggleSpeechSpeed()" id="speedBtn" title="음성 속도 조절" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold flex items-center gap-1 transition">
+                    🔊 읽기 속도: <span id="speedLabel" class="text-yellow-300">보통</span>
+                </button>
+
+                <div class="flex items-center bg-indigo-900/60 rounded-xl px-2 py-1">
+                    <span class="text-xs mr-1">글자 크기:</span>
+                    <button onclick="changeFontSize(-1)" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-lg flex items-center justify-center">-</button>
+                    <span id="fontSizeVal" class="px-2 font-bold text-yellow-300">보통</span>
+                    <button onclick="changeFontSize(1)" class="w-7 h-7 bg-indigo-600 hover:bg-indigo-500 rounded-lg font-bold text-lg flex items-center justify-center">+</button>
+                </div>
+
+                <button onclick="toggleHighContrast()" id="contrastBtn" class="px-3 py-1.5 bg-yellow-400 text-indigo-950 hover:bg-yellow-300 font-bold rounded-xl flex items-center gap-1 transition shadow">
+                    👁️ 고대비 모드
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Friendly Companion Banner & Progress -->
+    <div class="max-w-6xl mx-auto w-full px-4 pt-6">
+        <div class="bg-white rounded-3xl p-4 shadow-md border-2 border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-4">
+            <!-- Mascot Voice Bubble -->
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-amber-100 border-2 border-amber-300 flex-shrink-0 flex items-center justify-center text-3xl shadow-inner animate-gentle">
+                    🐻
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-indigo-900 font-friendly text-lg">배움 도우미 '곰곰이'</span>
+                        <button onclick="speakText(document.getElementById('mascotMsg').innerText)" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full hover:bg-indigo-200">
+                            🔊 들어보기
+                        </button>
+                    </div>
+                    <p id="mascotMsg" class="text-gray-700 font-medium mt-1">
+                        오늘도 반가워요! 천천히 그림과 함께 재미있는 과학을 배워보아요. 서두르지 않아도 괜찮아요!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="w-full md:w-auto flex flex-col items-end min-w-[220px]">
+                <div class="flex justify-between w-full text-xs font-bold text-indigo-800 mb-1">
+                    <span>오늘의 학습 완성도</span>
+                    <span id="overallPercent">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-4 rounded-full overflow-hidden border border-gray-300">
+                    <div id="overallProgressBar" class="bg-emerald-500 h-full transition-all duration-500 w-0"></div>
+                </div>
+                <span class="text-xs text-gray-500 mt-1" id="stampCountText">🏆 스탬프 0 / 4 개 획득</span>
+            </div>
+        </div>
+
+        <!-- 4 Step Navigation Tabs -->
+        <nav class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+            <button onclick="switchStep(1)" id="stepTab1" class="step-tab p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition bg-indigo-600 text-white border-indigo-700 shadow-md">
+                <span class="text-2xl">🔤 1단계</span>
+                <span class="text-sm font-friendly">단어 쏙쏙 익히기</span>
+            </button>
+            <button onclick="switchStep(2)" id="stepTab2" class="step-tab p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition bg-white text-gray-700 border-gray-200 hover:border-indigo-300 shadow-sm">
+                <span class="text-2xl">📖 2단계</span>
+                <span class="text-sm font-friendly">쉬운 설명 & 움직이는 그림</span>
+            </button>
+            <button onclick="switchStep(3)" id="stepTab3" class="step-tab p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition bg-white text-gray-700 border-gray-200 hover:border-indigo-300 shadow-sm">
+                <span class="text-2xl">🎯 3단계</span>
+                <span class="text-sm font-friendly">알맞은 퀴즈 풀기</span>
+            </button>
+            <button onclick="switchStep(4)" id="stepTab4" class="step-tab p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition bg-white text-gray-700 border-gray-200 hover:border-indigo-300 shadow-sm">
+                <span class="text-2xl">🏆 4단계</span>
+                <span class="text-sm font-friendly">나의 성취 & 칭찬판</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-grow">
+
+        <!-- ==================== STEP 1: KEY VOCABULARY ==================== -->
+        <section id="stepSection1" class="step-content space-y-6">
+            <div class="bg-indigo-50 rounded-3xl p-6 border-2 border-indigo-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-indigo-900 font-friendly">🔤 주요 단어 이해하기</h2>
+                        <p class="text-gray-600 text-sm mt-1">카드를 누르면 뒤집히면서 쉬운 뜻과 예시가 나와요. 스피커를 누르면 들을 수 있어요!</p>
+                    </div>
+                    <button onclick="speakText('1단계 주요 단어 이해하기. 낱말 카드를 눌러 뜻을 확인해 보세요.')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow hover:bg-indigo-700">
+                        🔊 이 단계 설명 듣기
+                    </button>
+                </div>
+
+                <!-- Word Flashcards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="vocabGrid">
+                    <!-- Dynamic Vocab Cards populated by JS -->
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="completeStep(1)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-lg px-8 py-3 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5">
+                        ✅ 단어 공부 완료! 2단계로 이동하기 ➔
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== STEP 2: EASY CONCEPTS & VISUAL SIMULATION ==================== -->
+        <section id="stepSection2" class="step-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 border-2 border-indigo-100 shadow-md">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-indigo-900 font-friendly">📖 쉬운 과학 핵심 요약 & 실험 놀이</h2>
+                        <p class="text-gray-600 text-sm">관심 있는 주제를 누르고, 직접 버튼을 눌러 에너지가 바뀌는 모습을 관찰하세요!</p>
+                    </div>
+                </div>
+
+                <!-- Sub-topic Selector Pills -->
+                <div class="flex flex-wrap gap-2 mb-6" id="conceptTopicPills">
+                    <button onclick="selectConceptTopic(0)" class="topic-btn px-4 py-2 rounded-2xl font-bold text-sm bg-indigo-600 text-white shadow">
+                        1. 🎢 롤러코스터와 공 (역학적 에너지)
+                    </button>
+                    <button onclick="selectConceptTopic(1)" class="topic-btn px-4 py-2 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        2. ⚖️ 줄어들면 늘어나요 (에너지 보존)
+                    </button>
+                    <button onclick="selectConceptTopic(2)" class="topic-btn px-4 py-2 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        3. 🧲 자석과 전기의 비밀 (전기 만들기)
+                    </button>
+                    <button onclick="selectConceptTopic(3)" class="topic-btn px-4 py-2 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        4. ⚡ 우리 집 가전제품 에너지 변환
+                    </button>
+                </div>
+
+                <!-- Dynamic Topic Content Box -->
+                <div id="conceptDetailBox" class="bg-indigo-50/70 p-6 rounded-2xl border border-indigo-200">
+                    <!-- Populated via JS -->
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="completeStep(2)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-lg px-8 py-3 rounded-2xl shadow-lg transition transform hover:-translate-y-0.5">
+                        ✅ 원리 이해 완료! 3단계 퀴즈 도전하기 ➔
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== STEP 3: EASY INTERACTIVE QUIZ ==================== -->
+        <section id="stepSection3" class="step-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 border-2 border-indigo-100 shadow-md">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-indigo-900 font-friendly">🎯 알맞은 퀴즈 풀어보기</h2>
+                        <p class="text-gray-600 text-sm">틀려도 괜찮아요! 힌트 버튼을 언제든 누를 수 있어요.</p>
+                    </div>
+                    <div class="bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-xl text-sm" id="quizCounter">
+                        문제 1 / 4
+                    </div>
+                </div>
+
+                <!-- Quiz Card Frame -->
+                <div class="bg-indigo-50/80 p-6 rounded-3xl border-2 border-indigo-200 max-w-3xl mx-auto my-4 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="bg-yellow-400 text-indigo-950 font-black text-xs px-3 py-1 rounded-full uppercase">쉬운 퀴즈</span>
+                        <button onclick="speakQuizQuestion()" class="text-indigo-700 hover:text-indigo-900 font-bold text-sm flex items-center gap-1 bg-white px-3 py-1 rounded-xl shadow-sm border border-indigo-200">
+                            🔊 문제 읽어주기
+                        </button>
+                    </div>
+
+                    <!-- Question Text -->
+                    <h3 id="quizQuestionText" class="text-xl font-bold text-gray-800 leading-snug mb-4">
+                        <!-- Dynamic Question Text -->
+                    </h3>
+
+                    <!-- Visual Diagram/Image inside Quiz -->
+                    <div id="quizVisualBox" class="mb-6 flex justify-center bg-white p-4 rounded-2xl border border-gray-200">
+                        <!-- Dynamic Visual or SVG -->
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="quizOptionsContainer" class="space-y-3">
+                        <!-- Dynamic Option Buttons -->
+                    </div>
+
+                    <!-- Hint & Explanation Area -->
+                    <div class="mt-6 pt-4 border-t border-indigo-200/60 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <button onclick="toggleHint()" class="bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-1">
+                            💡 힌트 보기
+                        </button>
+
+                        <div id="quizHintBox" class="hidden bg-amber-50 text-amber-900 p-3 rounded-xl text-sm font-medium border border-amber-300 w-full sm:w-auto">
+                            <!-- Dynamic Hint Text -->
+                        </div>
+                    </div>
+
+                    <!-- Answer Feedback Banner -->
+                    <div id="quizFeedbackBox" class="hidden mt-4 p-4 rounded-2xl text-center font-bold text-lg animate-bounce">
+                        <!-- Success / Encouragement Feedback -->
+                    </div>
+                </div>
+
+                <!-- Quiz Navigation Buttons -->
+                <div class="flex justify-between items-center max-w-3xl mx-auto mt-6">
+                    <button onclick="prevQuiz()" id="prevQuizBtn" class="px-5 py-2.5 rounded-xl font-bold bg-gray-200 text-gray-600 hover:bg-gray-300 disabled:opacity-50" disabled>
+                        ⬅️ 이전 문제
+                    </button>
+                    <button onclick="nextQuiz()" id="nextQuizBtn" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow">
+                        다음 문제 ➡️
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== STEP 4: ACHIEVEMENT & REWARD STAMPS ==================== -->
+        <section id="stepSection4" class="step-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 border-2 border-indigo-100 shadow-md text-center">
+                <div class="max-w-2xl mx-auto">
+                    <div class="text-5xl mb-2">🎉</div>
+                    <h2 class="text-3xl font-extrabold text-indigo-900 font-friendly mb-2">참 잘했어요! 칭찬판</h2>
+                    <p class="text-gray-600 text-sm mb-6">단계별 학습을 완성하고 모은 멋진 칭찬 스탬프입니다!</p>
+
+                    <!-- Stamp Board -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 flex flex-col items-center justify-center">
+                            <div id="stamp1" class="w-16 h-16 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center text-3xl text-gray-300 transition-all">
+                                🔒
+                            </div>
+                            <span class="text-xs font-bold text-gray-700 mt-2">1단계: 단어 쏙쏙</span>
+                        </div>
+
+                        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 flex flex-col items-center justify-center">
+                            <div id="stamp2" class="w-16 h-16 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center text-3xl text-gray-300 transition-all">
+                                🔒
+                            </div>
+                            <span class="text-xs font-bold text-gray-700 mt-2">2단계: 원리 이해</span>
+                        </div>
+
+                        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 flex flex-col items-center justify-center">
+                            <div id="stamp3" class="w-16 h-16 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center text-3xl text-gray-300 transition-all">
+                                🔒
+                            </div>
+                            <span class="text-xs font-bold text-gray-700 mt-2">3단계: 퀴즈 왕</span>
+                        </div>
+
+                        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 flex flex-col items-center justify-center">
+                            <div id="stamp4" class="w-16 h-16 rounded-full border-4 border-dashed border-gray-300 flex items-center justify-center text-3xl text-gray-300 transition-all">
+                                🔒
+                            </div>
+                            <span class="text-xs font-bold text-gray-700 mt-2">4단계: 탐구 완성</span>
+                        </div>
+                    </div>
+
+                    <!-- Certificate Box -->
+                    <div id="certificateContainer" class="bg-amber-50 border-4 border-amber-300 p-6 rounded-3xl relative shadow-lg hidden">
+                        <div class="text-yellow-600 font-bold text-sm tracking-widest uppercase mb-1">칭찬 수여장</div>
+                        <h3 class="text-2xl font-black text-indigo-950 font-friendly mb-2">🌟 최고의 과학 탐구가 상 🌟</h3>
+                        <p class="text-gray-700 text-sm leading-relaxed mb-4">
+                            위 학생은 포기하지 않고 <strong>'에너지 전환과 보존'</strong> 단원을 끝까지 즐겁게 학습하였으므로 이 상장을 드립니다.
+                        </p>
+                        <div class="flex justify-around items-center pt-2 border-t border-amber-200">
+                            <span class="text-xs text-amber-800 font-bold">수여일: <span id="certDate"></span></span>
+                            <span class="text-lg">🏅</span>
+                            <span class="text-xs text-amber-800 font-bold">차근차근 과학배움터</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="mt-8 flex flex-wrap justify-center gap-4">
+                        <button onclick="resetLearning()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-6 py-3 rounded-2xl transition text-sm">
+                            🔄 처음부터 다시 공부하기
+                        </button>
+                        <button onclick="speakText('정말 대단해요! 오늘 배운 과학 내용을 모두 마스터했어요!')" class="bg-yellow-400 hover:bg-yellow-300 text-indigo-950 font-extrabold px-6 py-3 rounded-2xl shadow transition text-sm">
+                            📣 축하 음성 듣기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Accessible Footer -->
+    <footer class="bg-indigo-900 text-indigo-200 py-6 text-center text-xs border-t border-indigo-800">
+        <div class="max-w-6xl mx-auto px-4 space-y-2">
+            <p class="font-friendly text-sm text-indigo-100">느린학습자를 위한 보편적 학습 설계 (UDL) 과학 교과 프로그램</p>
+            <p>쉬운 용어 · 시각적 애니메이션 · 음성 지원 · 보상 체계 내장</p>
+        </div>
+    </footer>
+
+    <script>
+        // Global App State
+        let currentStep = 1;
+        let fontScaleLevel = 1; // 0: Small, 1: Normal, 2: Large, 3: Extra Large
+        const fontScaleClasses = ['text-sm', 'text-base', 'text-lg', 'text-xl'];
+        
+        let speechSpeed = 0.9; // Normal/Slightly slow for clarity
+        const speechSpeeds = [0.7, 0.9, 1.1];
+        const speechLabels = ['천천히', '보통', '빠르게'];
+        let currentSpeedIdx = 1;
+
+        let completedSteps = [false, false, false, false];
+        let quizIndex = 0;
+        let selectedConceptIdx = 0;
+
+        // Vocabulary Data based directly on source images
+        const vocabData = [
+            {
+                word: "역학적 에너지",
+                icon: "🎢",
+                short: "위치 에너지 + 운동 에너지",
+                explain: "물체가 높은 곳에 있어서 생기는 '위치 에너지'와, 움직일 때 생기는 '운동 에너지'를 합친 전체 에너지예요.",
+                example: "롤러코스터가 위에서 내려올 때 두 에너지가 서로 바뀌어요!"
+            },
+            {
+                word: "위치 에너지",
+                icon: "⛰️",
+                short: "높이 올라갈수록 커지는 힘",
+                explain: "높은 곳에 있는 물체가 가지는 에너지예요. 높이가 높아질수록 위치 에너지가 더 커져요.",
+                example: "높은 다이빙대에 서 있는 사람의 에너지"
+            },
+            {
+                word: "운동 에너지",
+                icon: "🏃",
+                short: "움직일 때 생기는 힘",
+                explain: "움직이는 물체가 가지는 에너지예요. 속도가 빠르고 무게가 무거울수록 커져요.",
+                example: "쌩쌩 달리는 자동차나 빠르게 굴러가는 공"
+            },
+            {
+                word: "에너지 보존",
+                icon: "🛡️",
+                short: "전체 양은 없어지지 않고 일정함",
+                explain: "에너지 모습이 바뀌어도, 전체 에너지의 총량(합계)은 새로 생기거나 사라지지 않고 유지돼요.",
+                example: "위치 에너지가 줄어든 만큼 운동 에너지가 똑같이 늘어나요!"
+            },
+            {
+                word: "전자기 유도 (전기 발생)",
+                icon: "🧲",
+                short: "자석을 움직여 전기를 만드는 현상",
+                explain: "코일(실처럼 감은 선) 근처에서 자석을 오르내리면 전기가 찌릿찌릿 생기는 현상이에요.",
+                example: "손으로 팽팽 돌리는 자가발전 손전등, 킥보드 불빛 바퀴"
+            },
+            {
+                word: "소비 전력 (W, 와트)",
+                icon: "💡",
+                short: "1초 동안 사용하는 전기 양",
+                explain: "전기 기구가 1초 동안 얼마나 많은 전기를 쓰는지 나타내는 숫자예요. 단구는 와트(W)를 써요.",
+                example: "220V-44W 전구는 1초에 44J의 전기를 사용해요."
+            }
+        ];
+
+        // Concept Explanations & Interactive Visualizers State
+        const conceptTopics = [
+            {
+                title: "🎢 롤러코스터와 공의 에너지 전환",
+                badge: "교과서 214쪽~215쪽 핵심",
+                desc: "높은 곳에서 아래로 내려올 때는 **위치 에너지가 줄어들고 운동 에너지가 늘어나요.** 반대로 올라갈 때는 운동 에너지가 줄어들고 위치 에너지가 늘어납니다!",
+                simType: "rollercoaster"
+            },
+            {
+                title: "⚖️ 에너지 보존 법칙 (줄어든 만큼 늘어나요)",
+                badge: "교과서 215쪽~216쪽 핵심",
+                desc: "공기 저항이 없다면, **(감소한 위치 에너지 = 증가한 운동 에너지)** 예요. 따라서 역학적 에너지 전체 합은 항상 똑같이 일정하게 유지됩니다.",
+                simType: "conservation"
+            },
+            {
+                title: "🧲 자석을 움직여 전기 만들기 (전자기 유도)",
+                badge: "교과서 220쪽~222쪽 핵심",
+                desc: "코일 안으로 자석을 가까이하거나 멀리할 때 전기가 생겨요! 자석을 더 빠르게 움직일수록 전기가 더 세게 만들어집니다.",
+                simType: "generator"
+            },
+            {
+                title: "⚡ 가정에서의 에너지 변환 예시",
+                badge: "교과서 223쪽~225쪽 핵심",
+                desc: "전기 에너지는 우리 집 여러 가전제품을 통해 **빛, 열, 소리, 운동 에너지**로 쉽게 변신할 수 있어요!",
+                simType: "homeAppliance"
+            }
+        ];
+
+        // Quizzes Data (Single focus design for slow learners)
+        const quizData = [
+            {
+                question: "롤러코스터나 공이 높은 곳에서 '아래로 내려올 때', 위치 에너지는 어떻게 될까요?",
+                visual: `
+                    <svg class="w-48 h-32" viewBox="0 0 200 120">
+                        <path d="M 20 20 Q 100 110 180 100" stroke="#4f46e5" stroke-width="4" fill="none"/>
+                        <circle cx="40" cy="35" r="12" fill="#ef4444"/>
+                        <path d="M 40 50 L 40 75" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+                        <text x="65" y="40" font-size="12" font-weight="bold" fill="#1e1b4b">내려가는 중 ⬇️</text>
+                    </svg>
+                `,
+                options: [
+                    { text: "① 위치 에너지가 감소한다 (줄어든다)", correct: true },
+                    { text: "② 위치 에너지가 늘어난다", correct: false },
+                    { text: "③ 전혀 변하지 않는다", correct: false }
+                ],
+                hint: "높은 곳에 있을 때가 위치 에너지가 가장 커요. 아래로 떨어지면 높이가 낮아지므로 감소해요!"
+            },
+            {
+                question: "공기 저항이 없을 때, 위치 에너지가 줄어든 만큼 어떤 에너지가 늘어날까요?",
+                visual: `
+                    <div class="flex items-center space-x-2 text-base font-bold bg-indigo-50 p-3 rounded-xl border border-indigo-200">
+                        <span class="text-red-500">줄어든 위치 에너지 📉</span>
+                        <span>=</span>
+                        <span class="text-green-600">늘어난 ( ? ) 에너지 📈</span>
+                    </div>
+                `,
+                options: [
+                    { text: "① 운동 에너지", correct: true },
+                    { text: "② 소리 에너지", correct: false },
+                    { text: "③ 화학 에너지", correct: false }
+                ],
+                hint: "높은 곳에서 떨어지면서 점점 속도가 빨라지죠? 움직이는 힘인 '운동 에너지'로 바뀌어요."
+            },
+            {
+                question: "손전등 내부나 자전거 바퀴의 자석을 빠르게 회전시키면 발생하는 것은 무엇일까요?",
+                visual: `
+                    <div class="text-4xl text-center">🧲 ➔ 🌀 ➔ 💡</div>
+                `,
+                options: [
+                    { text: "① 얼음", correct: false },
+                    { text: "② 전기 (전류)", correct: true },
+                    { text: "③ 석유", correct: false }
+                ],
+                hint: "자석과 코일이 만나 움직이면 전기 에너지(전류)가 만들어집니다!"
+            },
+            {
+                question: "전기 다리미나 전기 난로는 '전기 에너지'를 어떤 에너지로 바꾸어 사용하는 걸까요?",
+                visual: `
+                    <div class="text-4xl text-center">🔌 ➔ ♨️ 🔥</div>
+                `,
+                options: [
+                    { text: "① 빛 에너지", correct: false },
+                    { text: "② 열 에너지 (따뜻함)", correct: true },
+                    { text: "③ 위치 에너지", correct: false }
+                ],
+                hint: "다리미나 난로는 옷을 다리거나 방을 따뜻하게 해주죠? 뜨거워지는 '열' 에너지예요."
+            }
+        ];
+
+        // Web Speech API Narrator
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop ongoing speech
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = speechSpeed;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Web Audio API Synthesizer for chimes (no external audio files required)
+        function playSoundEffect(type) {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    // Happy High Chime
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, ctx.currentTime + 0.15); // E5
+                    osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.3); // G5
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.5);
+                } else if (type === 'hint') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'complete') {
+                    // Fanfare
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.7);
+                }
+            } catch(e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        function toggleSpeechSpeed() {
+            currentSpeedIdx = (currentSpeedIdx + 1) % speechSpeeds.length;
+            speechSpeed = speechSpeeds[currentSpeedIdx];
+            document.getElementById('speedLabel').innerText = speechLabels[currentSpeedIdx];
+            speakText(`읽기 속도가 ${speechLabels[currentSpeedIdx]}로 변경되었습니다.`);
+        }
+
+        function changeFontSize(delta) {
+            fontScaleLevel = Math.max(0, Math.min(fontScaleClasses.length - 1, fontScaleLevel + delta));
+            const appBody = document.getElementById('appBody');
+            
+            // Remove previous text scale classes
+            fontScaleClasses.forEach(cls => appBody.classList.remove(cls));
+            appBody.classList.add(fontScaleClasses[fontScaleLevel]);
+
+            const labels = ['작게', '보통', '크게', '아주 크게'];
+            document.getElementById('fontSizeVal').innerText = labels[fontScaleLevel];
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const isHC = document.body.classList.contains('high-contrast');
+            document.getElementById('contrastBtn').classList.toggle('bg-yellow-300', isHC);
+        }
+
+        function switchStep(stepNum) {
+            currentStep = stepNum;
+            
+            // Hide all section content
+            document.querySelectorAll('.step-content').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`stepSection${stepNum}`).classList.remove('hidden');
+
+            // Style active tabs
+            document.querySelectorAll('.step-tab').forEach((tab, idx) => {
+                if (idx + 1 === stepNum) {
+                    tab.className = "step-tab p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition bg-indigo-600 text-white border-indigo-700 shadow-md";
+                } else {
+                    tab.className = "step-tab p-4 rounded-2xl border-2 font-bold flex flex-col items-center gap-2 transition bg-white text-gray-700 border-gray-200 hover:border-indigo-300 shadow-sm";
+                }
+            });
+
+            // Mascot message update per step
+            const msgs = [
+                "",
+                "1단계예요! 알록달록 단어 카드를 눌러보세요. 소리도 함께 들을 수 있어요.",
+                "2단계예요! 롤러코스터와 자석 시뮬레이션을 직접 눌러보며 원리를 경험하세요.",
+                "3단계 퀴즈예요! 시간 제한이 없으니 힌트를 활용해 천천히 정답을 찾아보세요.",
+                "4단계 축하판이에요! 그동안 모은 멋진 스탬프와 상장을 확인하세요!"
+            ];
+            document.getElementById('mascotMsg').innerText = msgs[stepNum];
+
+            if (stepNum === 2) {
+                renderConceptDetail();
+            } else if (stepNum === 3) {
+                renderQuiz();
+            } else if (stepNum === 4) {
+                renderStamps();
+            }
+        }
+
+        function completeStep(stepNum) {
+            completedSteps[stepNum - 1] = true;
+            updateOverallProgress();
+            playSoundEffect('complete');
+
+            if (stepNum < 4) {
+                switchStep(stepNum + 1);
+            } else {
+                switchStep(4);
+            }
+        }
+
+        function updateOverallProgress() {
+            const count = completedSteps.filter(Boolean).length;
+            const percent = Math.round((count / 4) * 100);
+            document.getElementById('overallPercent').innerText = `${percent}%`;
+            document.getElementById('overallProgressBar').style.width = `${percent}%`;
+            document.getElementById('stampCountText').innerText = `🏆 스탬프 ${count} / 4 개 획득`;
+        }
+
+        function renderVocabCards() {
+            const container = document.getElementById('vocabGrid');
+            container.innerHTML = vocabData.map((item, idx) => `
+                <div class="bg-white rounded-2xl p-5 border-2 border-indigo-100 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between group" onclick="speakVocab(${idx})">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-3xl">${item.icon}</span>
+                            <button onclick="event.stopPropagation(); speakVocab(${idx})" class="text-indigo-600 bg-indigo-50 p-2 rounded-xl hover:bg-indigo-100 text-xs font-bold flex items-center gap-1">
+                                🔊 소리듣기
+                            </button>
+                        </div>
+                        <h3 class="text-xl font-extrabold text-indigo-950 font-friendly mb-1">${item.word}</h3>
+                        <div class="inline-block bg-yellow-100 text-yellow-900 text-xs font-bold px-2.5 py-1 rounded-lg mb-3">
+                            💡 ${item.short}
+                        </div>
+                        <p class="text-gray-700 text-sm leading-relaxed mb-3">${item.explain}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs text-gray-600">
+                        <strong class="text-indigo-700">예시:</strong> ${item.example}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function speakVocab(idx) {
+            const item = vocabData[idx];
+            speakText(`${item.word}. ${item.short}. ${item.explain}`);
+        }
+
+        function selectConceptTopic(idx) {
+            selectedConceptIdx = idx;
+            document.querySelectorAll('.topic-btn').forEach((btn, i) => {
+                if (i === idx) {
+                    btn.className = "topic-btn px-4 py-2 rounded-2xl font-bold text-sm bg-indigo-600 text-white shadow";
+                } else {
+                    btn.className = "topic-btn px-4 py-2 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700 hover:bg-gray-200";
+                }
+            });
+            renderConceptDetail();
+        }
+
+        function renderConceptDetail() {
+            const topic = conceptTopics[selectedConceptIdx];
+            const box = document.getElementById('conceptDetailBox');
+
+            let interactiveHTML = '';
+
+            if (topic.simType === 'rollercoaster') {
+                interactiveHTML = `
+                    <div class="bg-white p-5 rounded-2xl border border-indigo-200 mt-4 text-center">
+                        <div class="font-bold text-indigo-900 mb-2">🎢 롤러코스터 높이 변경 체험기</div>
+                        <p class="text-xs text-gray-500 mb-4">버튼을 눌러 롤러코스터 위치를 높이고 낮춰보세요. 에너지 바가 어떻게 바뀌나요?</p>
+                        
+                        <div class="flex justify-center gap-3 mb-6">
+                            <button onclick="setCoasterPos('top')" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow">
+                                🔝 꼭대기 (가장 높은 곳)
+                            </button>
+                            <button onclick="setCoasterPos('mid')" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow">
+                                ↗️ 중간 지점
+                            </button>
+                            <button onclick="setCoasterPos('bottom')" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow">
+                                ⬇️ 바닥 (가장 낮은 곳)
+                            </button>
+                        </div>
+
+                        <!-- Bar Graph Visualizer -->
+                        <div class="max-w-md mx-auto space-y-4 bg-indigo-50/50 p-4 rounded-xl border">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-red-700 mb-1">
+                                    <span>위치 에너지 (높이에 따른 힘)</span>
+                                    <span id="peVal">100%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 h-6 rounded-xl overflow-hidden border">
+                                    <div id="peBar" class="bg-red-500 h-full transition-all duration-500" style="width: 100%;"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-green-700 mb-1">
+                                    <span>운동 에너지 (속도에 따른 힘)</span>
+                                    <span id="keVal">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 h-6 rounded-xl overflow-hidden border">
+                                    <div id="keBar" class="bg-green-500 h-full transition-all duration-500" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (topic.simType === 'conservation') {
+                interactiveHTML = `
+                    <div class="bg-white p-5 rounded-2xl border border-indigo-200 mt-4 text-center">
+                        <div class="font-bold text-indigo-900 mb-2">⚖️ 역학적 에너지 보존 계산해보기</div>
+                        <p class="text-xs text-gray-600 mb-4">공이 아래로 떨어질 때 두 에너지의 합을 확인해보세요!</p>
+                        <div class="flex justify-center items-center gap-2 text-sm sm:text-base font-bold flex-wrap bg-amber-50 p-4 rounded-xl border border-amber-200">
+                            <span class="text-red-600">위치 에너지 (50J)</span>
+                            <span>+</span>
+                            <span class="text-green-600">운동 에너지 (50J)</span>
+                            <span>=</span>
+                            <span class="text-indigo-900 bg-yellow-300 px-3 py-1 rounded-xl shadow">항상 100J (보존!)</span>
+                        </div>
+                    </div>
+                `;
+            } else if (topic.simType === 'generator') {
+                interactiveHTML = `
+                    <div class="bg-white p-5 rounded-2xl border border-indigo-200 mt-4 text-center">
+                        <div class="font-bold text-indigo-900 mb-2">🧲 손전등 발전기 펌프 체험</div>
+                        <p class="text-xs text-gray-500 mb-4">'자석 흔들기' 버튼을 계속 눌러 불을 켜보세요!</p>
+
+                        <button onclick="pumpMagnet()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold px-6 py-3 rounded-2xl shadow-lg transform active:scale-95 transition mb-4">
+                            🧲 자석을 코일 안에서 움직이기!
+                        </button>
+
+                        <div class="flex justify-center items-center gap-4 mt-2">
+                            <div id="lightBulb" class="text-6xl transition-all duration-300 grayscale opacity-40">
+                                💡
+                            </div>
+                            <div class="text-left text-xs font-bold text-gray-700">
+                                <p id="bulbStateText">전기가 아직 생기지 않았어요.</p>
+                                <p class="text-indigo-600 mt-1">자석 이동 ➔ 전기 발생(전자기 유도)</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (topic.simType === 'homeAppliance') {
+                interactiveHTML = `
+                    <div class="bg-white p-5 rounded-2xl border border-indigo-200 mt-4 text-center">
+                        <div class="font-bold text-indigo-900 mb-3">🔌 가전제품을 누르면 에너지가 변해요!</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <button onclick="speakText('전등은 전기 에너지를 빛 에너지로 바꾸어 방을 밝혀줍니다.')" class="p-3 bg-yellow-50 hover:bg-yellow-100 rounded-xl border border-yellow-200 font-bold text-xs flex flex-col items-center gap-1">
+                                <span class="text-2xl">💡 전등</span>
+                                <span>전기 ➔ 빛 에너지</span>
+                            </button>
+                            <button onclick="speakText('선풍기는 전기 에너지를 바람을 만드는 운동 에너지로 바꿉니다.')" class="p-3 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-200 font-bold text-xs flex flex-col items-center gap-1">
+                                <span class="text-2xl">🌀 선풍기</span>
+                                <span>전기 ➔ 운동 에너지</span>
+                            </button>
+                            <button onclick="speakText('전기 다리미는 전기 에너지를 뜨거운 열 에너지로 바꿉니다.')" class="p-3 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 font-bold text-xs flex flex-col items-center gap-1">
+                                <span class="text-2xl">🧺 다리미</span>
+                                <span>전기 ➔ 열 에너지</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            box.innerHTML = `
+                <div class="flex justify-between items-start gap-2 mb-2">
+                    <span class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">${topic.badge}</span>
+                    <button onclick="speakText('${topic.title}. ${topic.desc}')" class="bg-white text-indigo-700 text-xs font-bold px-3 py-1 rounded-xl border shadow-sm hover:bg-gray-50">
+                        🔊 내용 들어보기
+                    </button>
+                </div>
+                <h3 class="text-xl font-extrabold text-indigo-950 font-friendly mb-2">${topic.title}</h3>
+                <p class="text-gray-700 text-sm leading-relaxed mb-4">${topic.desc}</p>
+                ${interactiveHTML}
+            `;
+        }
+
+        // Rollercoaster simulation helper
+        function setCoasterPos(pos) {
+            const peBar = document.getElementById('peBar');
+            const keBar = document.getElementById('keBar');
+            const peVal = document.getElementById('peVal');
+            const keVal = document.getElementById('keVal');
+
+            if (!peBar || !keBar) return;
+
+            if (pos === 'top') {
+                peBar.style.width = '100%';
+                keBar.style.width = '0%';
+                peVal.innerText = '100%';
+                keVal.innerText = '0%';
+                speakText('높은 꼭대기에 있어서 위치 에너지가 최대예요.');
+            } else if (pos === 'mid') {
+                peBar.style.width = '50%';
+                keBar.style.width = '50%';
+                peVal.innerText = '50%';
+                keVal.innerText = '50%';
+                speakText('중간 높이에서는 위치 에너지와 운동 에너지가 절반씩 나누어져요.');
+            } else if (pos === 'bottom') {
+                peBar.style.width = '0%';
+                keBar.style.width = '100%';
+                peVal.innerText = '0%';
+                keVal.innerText = '100%';
+                speakText('바닥에 도착해서 속도가 가장 빠르므로 운동 에너지가 최대예요.');
+            }
+        }
+
+        // Magnet simulation helper
+        let magnetPumpCount = 0;
+        function pumpMagnet() {
+            magnetPumpCount++;
+            const bulb = document.getElementById('lightBulb');
+            const text = document.getElementById('bulbStateText');
+
+            if (!bulb) return;
+
+            playSoundEffect('hint');
+            bulb.classList.remove('grayscale', 'opacity-40');
+            bulb.classList.add('scale-125');
+            text.innerText = `💡 전기가 만들어져 환하게 불이 켜졌어요! (${magnetPumpCount}회 흔듦)`;
+
+            setTimeout(() => {
+                bulb.classList.add('grayscale', 'opacity-40');
+                bulb.classList.remove('scale-125');
+            }, 800);
+        }
+
+        function renderQuiz() {
+            const q = quizData[quizIndex];
+            document.getElementById('quizCounter').innerText = `문제 ${quizIndex + 1} / ${quizData.length}`;
+            document.getElementById('quizQuestionText').innerText = q.question;
+            document.getElementById('quizVisualBox').innerHTML = q.visual;
+            document.getElementById('quizHintBox').innerText = q.hint;
+            document.getElementById('quizHintBox').classList.add('hidden');
+            
+            const feedback = document.getElementById('quizFeedbackBox');
+            feedback.classList.add('hidden');
+            feedback.className = "hidden mt-4 p-4 rounded-2xl text-center font-bold text-lg";
+
+            const container = document.getElementById('quizOptionsContainer');
+            container.innerHTML = q.options.map((opt, idx) => `
+                <button onclick="checkQuizAnswer(${idx})" class="w-full text-left p-4 rounded-2xl border-2 border-indigo-100 bg-white hover:bg-indigo-50 font-bold text-gray-800 transition flex items-center justify-between shadow-sm">
+                    <span>${opt.text}</span>
+                    <span class="text-indigo-400 font-normal text-xs">선택</span>
+                </button>
+            `).join('');
+
+            document.getElementById('prevQuizBtn').disabled = quizIndex === 0;
+            if (quizIndex === quizData.length - 1) {
+                document.getElementById('nextQuizBtn').innerText = "퀴즈 완료하기 🎉";
+            } else {
+                document.getElementById('nextQuizBtn').innerText = "다음 문제 ➡️";
+            }
+        }
+
+        function speakQuizQuestion() {
+            const q = quizData[quizIndex];
+            speakText(`문제. ${q.question}`);
+        }
+
+        function toggleHint() {
+            const hintBox = document.getElementById('quizHintBox');
+            hintBox.classList.toggle('hidden');
+            if (!hintBox.classList.contains('hidden')) {
+                playSoundEffect('hint');
+                speakText(`힌트: ${quizData[quizIndex].hint}`);
+            }
+        }
+
+        function checkQuizAnswer(optIdx) {
+            const q = quizData[quizIndex];
+            const isCorrect = q.options[optIdx].correct;
+            const feedback = document.getElementById('quizFeedbackBox');
+
+            feedback.classList.remove('hidden');
+
+            if (isCorrect) {
+                playSoundEffect('correct');
+                feedback.className = "mt-4 p-4 rounded-2xl text-center font-bold text-lg bg-emerald-100 text-emerald-900 border-2 border-emerald-300";
+                feedback.innerHTML = "🎉 정답이에요! 참 잘했어요!";
+                speakText("정답이에요! 참 잘했어요!");
+            } else {
+                feedback.className = "mt-4 p-4 rounded-2xl text-center font-bold text-lg bg-amber-100 text-amber-900 border-2 border-amber-300";
+                feedback.innerHTML = "괜찮아요! 💡 힌트를 읽어보고 다시 정답을 골라보세요.";
+                speakText("괜찮아요! 힌트를 읽어보고 다시 정답을 골라보세요.");
+            }
+        }
+
+        function prevQuiz() {
+            if (quizIndex > 0) {
+                quizIndex--;
+                renderQuiz();
+            }
+        }
+
+        function nextQuiz() {
+            if (quizIndex < quizData.length - 1) {
+                quizIndex++;
+                renderQuiz();
+            } else {
+                completeStep(3);
+            }
+        }
+
+        function renderStamps() {
+            completedSteps.forEach((done, idx) => {
+                const stampElem = document.getElementById(`stamp${idx + 1}`);
+                if (done) {
+                    stampElem.className = "w-16 h-16 rounded-full bg-yellow-400 border-4 border-yellow-500 flex items-center justify-center text-3xl shadow-lg transform rotate-6 transition-all";
+                    stampElem.innerText = "⭐";
+                }
+            });
+
+            // If all steps completed
+            const allDone = completedSteps.every(Boolean);
+            const cert = document.getElementById('certificateContainer');
+            if (allDone) {
+                cert.classList.remove('hidden');
+                document.getElementById('certDate').innerText = new Date().toLocaleDateString('ko-KR');
+                playSoundEffect('complete');
+            }
+        }
+
+        function resetLearning() {
+            completedSteps = [false, false, false, false];
+            quizIndex = 0;
+            updateOverallProgress();
+            switchStep(1);
+        }
+
+        window.onload = function() {
+            renderVocabCards();
+            updateOverallProgress();
+            
+            // Welcome TTS Announcement
+            setTimeout(() => {
+                speakText("차근차근 과학배움터에 오신 것을 환영합니다! 1단계 주요 단어부터 공부해 보아요.");
+            }, 500);
+        };
+    </script>
+</body>
+</html>
